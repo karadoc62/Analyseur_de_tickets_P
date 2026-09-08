@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from app.services.ticket_analyzer import analyze_ticket
+from app.models.ticket import TicketAnalysis, TicketRequest
 
 app = FastAPI()
 
@@ -16,9 +18,5 @@ def get_health():
     "/tickets/analyze",
     response_model = TicketAnalysis
     )
-def analyze_ticket(ticket: TicketRequest):
-    return {
-        "category": "NETWORK",
-        "priority": "HIGH",
-        "summary": "Problème de connexion Wifi"
-    }
+def analyze_ticket_route(ticket: TicketRequest):
+    return analyze_ticket(ticket)
