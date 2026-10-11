@@ -3,6 +3,7 @@ import os
 from fastapi import FastAPI, HTTPException
 
 from app.ai.factory import create_ai_model
+from app.ai.exceptions import AIResponseError, AIConnectionError, AITimeoutError
 from app.services.ticket_analyzer import analyze_ticket
 from app.models.ticket import TicketAnalysis, TicketRequest
 
@@ -28,15 +29,21 @@ def analyze_ticket_route(ticket: TicketRequest):
     try:
         return analyze_ticket(ticket, model)
     
-    except ConnectionError as exc:
+    except AIConnectionError as exc:
         raise HTTPException(
             status_code=503,  # Service Unavailable
             detail=str(exc),
         ) from exc
     
-    except RuntimeError as exc:
+    except AITimeoutError as exc:
         raise HTTPException(
-            status_code=502,  # Bad Gateway
+            status_code=504,  
             detail=str(exc)
         ) from exc
+        
+    except AIResponseError as exc:
+        raise HTTPException(
+            code_status=502,  # Bad Gateway
+            detail=str(exc)
+        )
         

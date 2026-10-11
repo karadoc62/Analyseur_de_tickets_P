@@ -2,6 +2,7 @@ import httpx
 import json
 
 from app.ai.base import AIModel
+from app.ai.exceptions import AIConnectionError, AIResponseError, AITimeoutError
 from app.models.ticket import TicketAnalysis, TicketRequest
 
 
@@ -41,13 +42,13 @@ class QwenModel(AIModel):
             response.raise_for_status()  # permet à httpx de lever une exception au lieu de continuer si le statut n'est pas 200 OK
         
         except httpx.TimeoutException as exc:
-            raise RuntimeError("Le serveur Ollama a mis trop longtemps pour répondre") from exc
+            raise AITimeoutError("Le serveur Ollama a mis trop longtemps pour répondre") from exc
         
         except httpx.ConnectError as exc:
-            raise ConnectionError("Impossible de joindre le serveur Ollama") from exc
+            raise AIConnectionError("Impossible de joindre le serveur Ollama") from exc
         
         except httpx.HTTPStatusError as exc:
-            raise RuntimeError("Ollama a retoruné une erreur HTTP") from exc
+            raise AIResponseError("Ollama a retoruné une erreur HTTP") from exc
         
         data = response.json()  # transforme le JSON renvoyé par Ollama en doctionnaire python
         
