@@ -12,3 +12,7 @@ L’objectif final est de recevoir un ticket contenant un message d'un utilisate
 ## Remarques
 Ce projet est un projet d'apprentissage Python.
 
+## Stack
+- Python + FastAPI pour le backend
+- HTML + CSS + JavaScript natif
+- Ollama pour exécuter Qwen et Gemma
