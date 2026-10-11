@@ -25,23 +25,38 @@ class QwenModel(AIModel):
         "N'ajoute aucun texte avant ou après le JSON.\n\n"
         f"Ticket : {ticket.text}" )
         
-        response = httpx.post(
-            f"{self.base_url}/api/generate", 
-            json={
-            "model": self.model_name,
-            "prompt": prompt,
-            "stream": False,
-            "format": json, # pour doubler la contrainte json en + du prompt qui est interprétable
-            },
-            timeout=30.0
-        )
         
-        response.raise_for_status()
+        try:
+            response = httpx.post(
+                f"{self.base_url}/api/generate", 
+                json={
+                "model": self.model_name,
+                "prompt": prompt,
+                "stream": False,
+                "format": TicketAnalysis.model_json_schema(), # pour doubler la contrainte json en + du prompt qui est interprétable. La on contraint Ollama a générer dans du json valide aussi
+                },
+                timeout=30.0
+            )
+            
+            response.raise_for_status()  # permet à httpx de lever une exception au lieu de continuer si le statut n'est pas 200 OK
         
-        data = response.json()
+        except httpx.TimeoutException as exc:
+            raise RuntimeError("Le serveur Ollama a mis trop longtemps pour répondre") from exc
+        
+        except httpx.ConnectError as exc:
+            raise ConnectionError("Impossible de joindre le serveur Ollama") from exc
+        
+        except httpx.HTTPStatusError as exc:
+            raise RuntimeError("Ollama a retoruné une erreur HTTP") from exc
+        
+        data = response.json()  # transforme le JSON renvoyé par Ollama en doctionnaire python
+        
+        print("Réponse brute Ollama :", data, flush=True)
+        print("Contenu généré :", data["response"], flush=True)
         
         raw_content = data["response"] # ici raw_content est toujours un str
         # il faut transformer cette chaine JSON en objet python -> import json
+        
         parsed_data = json.loads(raw_content) # json.loads signifie charge du json depuis une chaine de caracteres
         
         

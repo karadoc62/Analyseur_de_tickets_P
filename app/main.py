@@ -7,7 +7,7 @@ from app.services.ticket_analyzer import analyze_ticket
 from app.models.ticket import TicketAnalysis, TicketRequest
 
 app = FastAPI()
-model_name = os.getenv("AI_MODEL", "fake")
+model_name = os.getenv("AI_MODEL", "fake")  # cherche une var d'env appelée AI_MoDEL mais par default fake
 model = create_ai_model(model_name)
 
 @app.get("/")
@@ -18,7 +18,7 @@ def get_home():
 @app.get("/health")
 def get_health():
     return {"status": "ok"}
-    
+
 
 @app.post(
     "/tickets/analyze",
