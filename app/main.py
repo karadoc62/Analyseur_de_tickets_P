@@ -1,6 +1,6 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 from app.ai.factory import create_ai_model
 from app.services.ticket_analyzer import analyze_ticket
@@ -25,4 +25,18 @@ def get_health():
     response_model = TicketAnalysis
     )
 def analyze_ticket_route(ticket: TicketRequest):
-    return analyze_ticket(ticket, model)
+    try:
+        return analyze_ticket(ticket, model)
+    
+    except ConnectionError as exc:
+        raise HTTPException(
+            status_code=503,  # Service Unavailable
+            detail=str(exc),
+        ) from exc
+    
+    except RuntimeError as exc:
+        raise HTTPException(
+            status_code=502,  # Bad Gateway
+            detail=str(exc)
+        ) from exc
+        
